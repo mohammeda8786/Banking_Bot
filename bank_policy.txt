@@ -1,0 +1,17 @@
+Title: ICICI Savings Account Opening (General Procedure)
+
+Online:
+1. Go to ICICI Bank official website or iMobile app.
+2. Enter mobile number, PAN, and basic details.
+3. Verify OTP sent to mobile number.
+4. Complete KYC (e-KYC / Video KYC if required).
+5. Submit details and receive account confirmation.
+
+Offline (Branch):
+1. Visit ICICI branch with PAN and address proof.
+2. Fill account opening form and complete KYC.
+3. Deposit initial amount (if required).
+4. Account is opened and details are shared.
+Security Note:
+- Do not share OTP, PIN, CVV, or passwords in chat.
+- For personal account details, user must log in.

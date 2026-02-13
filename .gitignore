@@ -1,0 +1,25 @@
+# ===== Root Level =====
+.env
+node_modules/
+.venv/
+.venv-chroma/
+__pycache__/
+
+# ===== Client =====
+client/node_modules/
+client/build/
+
+# ===== Server =====
+server/node_modules/
+server/uploads/
+server/logs/
+
+# ===== Database =====
+chroma/
+*.sqlite3
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+server/.env
+client/.env
