@@ -9,7 +9,8 @@
   "scripts": {
     "start": "node index.js",
     "dev": "node --max-old-space-size=4096 node_modules/nodemon/bin/nodemon.js index.js",
-    "seed": "node seed/seedDemoData.js"
+    "seed": "node seed/seedDemoData.js",
+    "test:ai": "node test-ai-connectivity.js"
   },
   "keywords": [],
   "author": "",

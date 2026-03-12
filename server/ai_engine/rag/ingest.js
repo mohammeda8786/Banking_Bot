@@ -10,7 +10,7 @@ const pdfParse = require("pdf-parse");
 export async function extractTextFromFile(filepath, mimetype) {
   if (mimetype === "application/pdf" || filepath.toLowerCase().endsWith(".pdf")) {
     const buffer = fs.readFileSync(filepath);
-    const parsed = await pdf(buffer);
+    const parsed = await pdfParse(buffer);
     return parsed.text || "";
   }
   return fs.readFileSync(filepath, "utf-8");

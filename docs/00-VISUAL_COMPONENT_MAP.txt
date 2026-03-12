@@ -1,0 +1,459 @@
+════════════════════════════════════════════════════════════════════════════════
+                     AUTHENTICATION SYSTEM - VISUAL OVERVIEW
+════════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                            USER INTERFACE FLOW                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+                              HOME PAGE (/)
+                          ┌─────────────────┐
+                          │  Hero Section   │
+                          └─────────────────┘
+                                  │
+                    ┌─────────────┴─────────────┐
+                    │                           │
+            ┌───────▼──────────┐      ┌────────▼────────────┐
+            │  AUTH ICONS      │      │  Feature Grid       │
+            │  (TOP-RIGHT)     │      │  6 Feature Cards    │
+            │  🔐 Sign In      │      │  Hover Effects      │
+            │  ✍️  Register    │      │                     │
+            └───────┬──────────┘      └────────┬────────────┘
+                    │                         │
+                    │        CTA Section      │
+                    └──────────┬──────────────┘
+                               │
+                    ┌──────────┴──────────┐
+                    │                     │
+            ┌───────▼─────────┐  ┌───────▼────────┐
+            │   LOGIN PAGE    │  │ REGISTER PAGE  │
+            │   (Existing)    │  │   (Existing)   │
+            │                 │  │                │
+            │ - Email input   │  │ - Name input   │
+            │ - Password      │  │ - Email input  │
+            │ - Submit        │  │ - Password     │
+            │ - Register link │  │ - Confirm pwd  │
+            │ - Demo user     │  │ - Submit       │
+            │                 │  │ - Login link   │
+            └────────┬────────┘  └────────┬───────┘
+                     │                    │
+                     └──────┬─────────────┘
+                            │
+                    ┌───────▼────────────┐
+                    │   AUTH CONTEXT     │
+                    │  - login()         │
+                    │  - register()      │
+                    │  - logout()        │
+                    └────────┬───────────┘
+                             │
+                    ┌────────▼──────────┐
+                    │ STORE TOKEN &     │
+                    │ USER IN STATE +   │
+                    │ LOCALSTORAGE      │
+                    └────────┬──────────┘
+                             │
+                    ┌────────▼──────────────┐
+                    │  REDIRECT TO CHAT    │
+                    │  /dashboard          │
+                    └──────────────────────┘
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         COMPONENT ARCHITECTURE                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+FRONTEND (client/src/)
+├── pages/
+│   ├── Home.jsx (NEW)                   ← Landing page with feature cards
+│   │                                       Auth icons: 🔐 Sign In, ✍️ Register
+│   │                                       Located top-right corner (sticky)
+│   │
+│   ├── Login.jsx (UPDATED)               ← Professional login form
+│   │                                       Contains error handling
+│   │                                       Has demo credentials
+│   │
+│   └── Register.jsx (NEW)                ← Full registration flow
+│                                           Auto-login after registration
+│
+├── auth/
+│   └── AuthContext.jsx (UPDATED)         ← Global state management
+│                                           login() method
+│                                           register() method
+│                                           logout() method
+│
+├── api/
+│   └── http.jsx (UPDATED)                ← Axios HTTP client
+│                                           Token injection interceptor
+│                                           401 error handling
+│
+├── styles/
+│   ├── Home.css (NEW)                    ← Landing page styling
+│   │                                       Hero section, feature grid
+│   │                                       Auth icons styling
+│   │
+│   └── AuthPages.css (NEW)               ← Login/Register styling
+│                                           Gradient backgrounds
+│                                           Form styling, animations
+│
+└── App.jsx (UPDATED)                     ← Routing configuration
+                                           All routes active
+
+
+BACKEND (server/)
+├── routes/
+│   └── auth.routes.js (UPDATED)          ← Authentication endpoints
+│       POST /api/auth/register
+│       POST /api/auth/login
+│
+├── models/
+│   └── User.js (EXISTING)                ← MongoDB User schema
+│
+├── middleware/
+│   ├── auth.middleware.js                ← JWT verification
+│   └── role.middleware.js                ← Role-based access
+│
+└── index.js (EXISTING)                   ← Express server setup
+
+
+DATABASE (MongoDB)
+└── ai-banking-bot
+    └── users (Collection)
+        └── User Documents:
+            {
+              _id: ObjectId,
+              name: String,
+              email: String (unique),
+              password: String (hashed),
+              role: String ("customer"|"admin"),
+              createdAt: Date,
+              updatedAt: Date
+            }
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         AUTHENTICATION FLOW                                 │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+REGISTRATION FLOW:
+═════════════════
+
+1. User visits Home page (/)
+   └─ Sees "Register" button in top-right
+   
+2. Click "Register" button
+   └─ Navigate to /register
+   
+3. User fills registration form
+   └─ Name: John Doe
+   └─ Email: john@example.com
+   └─ Password: SecurePass123
+   └─ Confirm Password: SecurePass123
+
+4. Client-side validation (Register.jsx)
+   ✓ Name not empty
+   ✓ Email format valid (contains @)
+   ✓ Password 6+ characters
+   ✓ Password matches confirmation
+   ✓ Error messages shown if validation fails
+
+5. Submit form
+   └─ HTTP POST /api/auth/register
+      Body: { name, email, password }
+
+6. Server receives request (auth.routes.js)
+   └─ Validate input
+   └─ Check email unique in MongoDB
+   └─ Hash password with bcryptjs (10 rounds)
+   └─ Create user document
+   └─ Generate JWT token (10 hours expiry)
+   └─ Return response:
+      {
+        "token": "eyJhbGc...",
+        "role": "customer",
+        "user": { id, name, email, role }
+      }
+
+7. Frontend receives response (AuthContext)
+   └─ Save token to localStorage
+   └─ Save user to localStorage
+   └─ Update AuthContext state
+   └─ Auto-login user
+
+8. Redirect to /dashboard
+   └─ User sees Chat interface
+   └─ All subsequent requests include JWT token
+
+
+LOGIN FLOW:
+═══════════
+
+1. User visits Home page (/)
+   └─ Sees "Sign In" button in top-right
+
+2. Click "Sign In" button
+   └─ Navigate to /login
+
+3. User fills login form
+   └─ Email: john@example.com
+   └─ Password: SecurePass123
+   
+   (Demo account available)
+   └─ Email: demo.user1@mail.com
+   └─ Password: Demo@123
+
+4. Client-side validation (Login.jsx)
+   ✓ Email not empty
+   ✓ Password not empty
+   ✓ Error messages shown if invalid
+
+5. Submit form
+   └─ HTTP POST /api/auth/login
+      Body: { email, password }
+
+6. Server receives request (auth.routes.js)
+   └─ Validate input
+   └─ Find user by email in MongoDB
+   └─ Compare password with bcryptjs
+   └─ Generate JWT token (10 hours expiry)
+   └─ Return response:
+      {
+        "token": "eyJhbGc...",
+        "role": "customer",
+        "user": { id, name, email, role }
+      }
+
+7. Frontend receives response (AuthContext)
+   └─ Save token to localStorage
+   └─ Save user to localStorage
+   └─ Update AuthContext state
+
+8. Redirect to /dashboard
+   └─ User sees Chat interface
+   └─ Session established
+
+
+PROTECTED API REQUEST FLOW:
+═════════════════════════════
+
+1. User authenticated (has token in localStorage)
+2. User makes API request (e.g., to Chat endpoint)
+3. HTTP Interceptor (http.jsx) intercepts request
+   └─ Get token from localStorage
+   └─ Add Authorization header: "Bearer <token>"
+4. Server receives request with Authorization header
+5. auth.middleware.js verifies JWT
+   ✓ Extract token from Authorization header
+   ✓ Verify signature with JWT_SECRET
+   ✓ Check token not expired
+   ✓ Extract user info from token payload
+6. If valid: Continue to route handler
+7. If invalid: Return 401 Unauthorized
+   └─ Frontend interceptor catches 401
+   └─ Clear localStorage
+   └─ Redirect to /login
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        KEY FEATURES IMPLEMENTED                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+✅ HOME PAGE (Frontend)
+   - Hero section with title and description
+   - 6 Feature cards with icons (🤖 🔐 💳 ⚡ 📊 🛡️)
+   - "How It Works" section with 3 steps
+   - "Start Chatting" CTA button
+   - Auth icons in TOP-RIGHT corner (sticky position)
+     - 🔐 Sign In button (navigates to /login)
+     - ✍️ Register button (navigates to /register)
+   - Beautiful gradient background
+   - Responsive design (mobile-first)
+   - Smooth animations and hover effects
+
+✅ REGISTRATION PAGE (Frontend)
+   - Name input field
+   - Email input field (with format validation)
+   - Password input field (6+ character requirement)
+   - Confirm password field (must match)
+   - Real-time validation messages (green ✓ or red ✗)
+   - Submit button (disabled during loading)
+   - Error alert box (if validation fails)
+   - Link to login page ("Already have an account?")
+   - Auto-login immediately after successful registration
+   - Redirect to /dashboard after registration
+
+✅ LOGIN PAGE (Frontend)
+   - Email input field
+   - Password input field
+   - "Remember me" checkbox (optional)
+   - Submit button (disabled during loading)
+   - Error alert box (invalid credentials)
+   - Demo account information footer
+   - Link to register page ("Don't have an account?")
+   - Pre-filled demo credentials (email, password)
+   - Loading state during API request
+
+✅ AUTHENTICATION CONTEXT (Frontend)
+   - Global state: token, role, user, loading, isAuthenticated
+   - login(email, password) method
+     - Validates input
+     - Calls backend API
+     - Stores token + user
+     - Returns user object
+   - register(name, email, password) method
+     - Validates input
+     - Calls backend API
+     - Auto-logs user in (by calling login)
+     - Stores token + user
+     - Returns user object
+   - logout() method
+     - Clears token from state
+     - Clears user from state
+     - Removes from localStorage
+   - Persistent authentication (checks localStorage on app mount)
+   - useAuth() hook for consuming context throughout app
+
+✅ HTTP CLIENT (Frontend)
+   - Configured Axios instance
+   - Base URL from environment variable (VITE_API_BASE_URL)
+   - Request interceptor: automatically injects JWT token in Authorization header
+   - Response interceptor: catches 401 errors
+   - 401 handler: clears localStorage + redirects to /login
+   - Error handling: returns meaningful error messages
+
+✅ ROUTING (Frontend)
+   - "/" → Home page (landing)
+   - "/login" → Login page
+   - "/register" → Register page
+   - "/chat" → Chat dashboard
+   - "/dashboard" → Chat dashboard (alias)
+   - "/admin" → Admin dashboard
+   - Fallback: redirects to "/"
+   - AuthProvider wraps entire app
+   - Protected routes use AuthContext
+
+✅ BACKEND API ENDPOINTS
+   - POST /api/auth/register
+     - Input: { name, email, password }
+     - Validates input
+     - Checks email uniqueness in MongoDB
+     - Hashes password with bcryptjs (10 rounds)
+     - Creates user document
+     - Generates JWT token (10 hours expiry)
+     - Output: { token, role, user: { id, name, email, role } }
+   
+   - POST /api/auth/login
+     - Input: { email, password }
+     - Validates input
+     - Finds user by email in MongoDB
+     - Compares password with bcryptjs
+     - Generates JWT token (10 hours expiry)
+     - Output: { token, role, user: { id, name, email, role } }
+
+✅ DATABASE (MongoDB)
+   - User collection with fields:
+     - _id: Unique ObjectId
+     - name: User's full name
+     - email: Unique email address (unique index)
+     - password: Bcryptjs hashed password
+     - role: "customer" or "admin"
+     - createdAt: Account creation timestamp
+     - updatedAt: Last updated timestamp
+
+✅ SECURITY FEATURES
+   - Passwords hashed with bcryptjs (10 rounds)
+   - JWT tokens with 10-hour expiration
+   - Email uniqueness enforced in MongoDB
+   - Password verification before token generation
+   - Client-side form validation
+   - Server-side input validation
+   - 401 error handling with automatic redirect
+   - Token stored in localStorage (not cookies)
+   - Authorization header injection on all requests
+   - Role-based access control middleware
+
+✅ USER EXPERIENCE FEATURES
+   - Auto-login after registration (seamless flow)
+   - Loading states on buttons during API calls
+   - Error messages displayed in red alert boxes
+   - Form validation with real-time feedback
+   - Smooth animations and transitions
+   - Responsive design for all screen sizes
+   - Sticky auth icons (always visible)
+   - Demo account pre-seeded for testing
+   - Helpful error messages
+   - Password confirmation validation
+   - Professional UI with gradients
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                            ENVIRONMENT SETUP                                │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+FRONTEND (.env):
+  VITE_API_BASE_URL=http://localhost:5000
+
+BACKEND (.env):
+  MONGODB_URI=mongodb://localhost:27017/ai-banking-bot
+  JWT_SECRET=your_super_secret_jwt_secret_key_12345
+  JWT_EXPIRE=10h
+  PORT=5000
+  NODE_ENV=development
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          TESTING THE SYSTEM                                 │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+DEMO ACCOUNT (Pre-seeded):
+  Email: demo.user1@mail.com
+  Password: Demo@123
+
+STEPS TO TEST:
+1. Start backend: cd server && npm run dev
+2. Start frontend: cd client && npm run dev
+3. Open http://localhost:5173
+4. Click "Register" button (top-right)
+5. Fill in registration form with new account
+6. Verify auto-login to /dashboard
+7. Test logout
+8. Click "Sign In" button (top-right)
+9. Login with demo account credentials
+10. Verify access to Chat dashboard
+
+TESTING REGISTRATION:
+1. Go to http://localhost:5173/register
+2. Enter: 
+   - Name: Test User
+   - Email: test123@example.com
+   - Password: TestPass123
+   - Confirm: TestPass123
+3. Click Submit
+4. Verify:
+   - No error messages
+   - Auto-redirects to /dashboard
+   - Chat interface loads
+   - User info visible (if implemented)
+
+TESTING LOGIN:
+1. Go to http://localhost:5173/login
+2. Enter demo credentials:
+   - Email: demo.user1@mail.com
+   - Password: Demo@123
+3. Click Submit
+4. Verify:
+   - No error messages
+   - Redirects to /dashboard
+   - Chat interface loads
+   - All functionality works
+
+TESTING ERROR HANDLING:
+1. Try invalid email format: "notanemail"
+2. Try password too short: "123"
+3. Try non-matching passwords in register
+4. Try non-existent account in login
+5. Verify error messages display properly
+
+
+════════════════════════════════════════════════════════════════════════════════
+                              END OF VISUAL MAP
+════════════════════════════════════════════════════════════════════════════════

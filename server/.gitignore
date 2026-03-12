@@ -1,0 +1,84 @@
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+package-lock.json
+yarn.lock
+
+# Environment variables (SECURITY: Never commit real env files)
+.env
+.env.local
+.env.*.local
+.env.production
+.env.test
+
+# OS Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE
+.vscode/
+*.swp
+*.swo
+*~
+.idea/
+*.sublime-workspace
+*.sublime-project
+.project
+.pydevproject
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+
+# Testing
+coverage/
+.nyc_output/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Local database files
+*.sqlite3
+*.db
+
+# AI Model cache (if local)
+ollama_cache/
+.cache/
+
+# Uploads (user files)
+uploads/*
+!uploads/.gitkeep
+
+# Logs directory
+logs/*
+!logs/.gitkeep
+
+# Production
+.next/
+out/
+
+# Misc
+*.pem
